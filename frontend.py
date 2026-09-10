@@ -4,14 +4,14 @@ from datetime import datetime
 import streamlit as st
 from langchain_core.messages import HumanMessage
 
-from main import app
-
 st.set_page_config(
     page_title="Travel Planner",
     page_icon="✈",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+from main import app
 
 st.markdown(
     """

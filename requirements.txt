@@ -6,3 +6,6 @@ python-dotenv==1.2.3
 tavily-python==0.8.1
 requests==2.34.2
 streamlit==1.63.0
+# Streamlit Cloud on Python 3.14 pulls pyarrow 25, which segfaults
+# (blank app after "Uvicorn server started"). Pin below 25.
+pyarrow>=17,<25
