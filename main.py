@@ -145,6 +145,23 @@ app = graph.compile(checkpointer=checkpointer)
 
 
 if __name__ == "__main__":
+    try:
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+        running_in_streamlit = get_script_run_ctx() is not None
+    except Exception:
+        running_in_streamlit = False
+
+    if running_in_streamlit:
+        import streamlit as st
+
+        st.set_page_config(page_title="Travel Planner", layout="wide")
+        st.error(
+            "This deployment is running `main.py`, which is the terminal CLI. "
+            "In Streamlit Cloud go to **⋮ → Settings → Main file path** and set it to "
+            "`frontend.py` or `streamlit_app.py`, then reboot."
+        )
+        st.stop()
+
     config = {
         "configurable": {
             "thread_id": "user_aarohi"

@@ -135,6 +135,17 @@ This will launch the Multi-Agent AI web application.
 
 ---
 
+# Deploy on Streamlit Community Cloud
+
+1. Push the repo to GitHub (do not commit `.env`).
+2. At [share.streamlit.io](https://share.streamlit.io), deploy the repo.
+3. Set **Main file path** to `streamlit_app.py` (or `frontend.py`). Do **not** use `main.py` — that is the terminal CLI and will show a blank page.
+4. In **Advanced settings**, set Python to **3.12**.
+5. Add secrets: `GROQ_API_KEY`, `GROQ_MODEL`, `TAVILY_API_KEY`, `AVIATIONSTACK_API_KEY`.
+6. Reboot the app.
+
+---
+
 #### Example Prompt
 
 Plan a complete 7 days Japan trip including flights, hotels and sightseeing under 2 lakhs.
