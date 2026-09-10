@@ -271,6 +271,8 @@ AGENT_META = {
     "final_agent": ("4", "Final plan"),
 }
 
+from tools.location_tool import detect_starting_city
+
 if "trip_query" not in st.session_state:
     st.session_state.trip_query = ""
 if "thread_id" not in st.session_state:
@@ -279,6 +281,14 @@ if "plan" not in st.session_state:
     st.session_state.plan = None
 if "form_error" not in st.session_state:
     st.session_state.form_error = ""
+if "origin_initialized" not in st.session_state:
+    detected, source = detect_starting_city(
+        ip=st.context.ip_address,
+        timezone_name=st.context.timezone,
+    )
+    st.session_state.origin_city = detected
+    st.session_state.origin_source = source
+    st.session_state.origin_initialized = True
 
 head_l, head_r = st.columns([3.2, 1.2], vertical_alignment="top")
 with head_l:
@@ -332,6 +342,15 @@ with left:
     )
 
     with st.form("trip_brief", clear_on_submit=False):
+        st.text_input(
+            "Starting city",
+            key="origin_city",
+            placeholder="e.g. Lagos, Nigeria",
+            help="Auto-filled from your connection or timezone. Edit if it is wrong.",
+        )
+        source = st.session_state.get("origin_source") or ""
+        if source and (st.session_state.get("origin_city") or "").strip():
+            st.caption(source)
         st.text_area(
             "Describe the trip",
             key="trip_query",
@@ -364,6 +383,7 @@ with right:
         config = {"configurable": {"thread_id": st.session_state.thread_id}}
         collected = {
             "query": query,
+            "origin_city": (st.session_state.origin_city or "").strip(),
             "flight_results": "",
             "hotel_results": "",
             "itinerary": "",
@@ -371,10 +391,12 @@ with right:
             "llm_calls": 0,
         }
 
+        origin = collected["origin_city"]
         for chunk in app.stream(
             {
                 "messages": [HumanMessage(content=query)],
                 "user_query": query,
+                "origin_city": origin,
                 "flight_results": "",
                 "hotel_results": "",
                 "itinerary": "",
@@ -413,6 +435,7 @@ with right:
         os.makedirs(save_dir, exist_ok=True)
         file_content = f"""# Travel Plan
 **Query:** {query}
+**Starting city:** {origin or "not provided"}
 **Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **Session ID:** {st.session_state.thread_id}
 

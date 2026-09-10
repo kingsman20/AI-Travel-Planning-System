@@ -36,6 +36,7 @@ llm = ChatGroq(
 class TravelState(TypedDict):
     messages: Annotated[list[AnyMessage], operator.add]
     user_query: str
+    origin_city: str
     flight_results: str
     hotel_results: str
     itinerary: str
@@ -44,7 +45,8 @@ class TravelState(TypedDict):
 # Flight Agent
 def flight_agent(state: TravelState):
     query = state["user_query"]
-    flight_data = search_flights(query)
+    origin = (state.get("origin_city") or "").strip()
+    flight_data = search_flights(query, origin=origin)
     return {
         "flight_results": flight_data,
         "messages": [
@@ -71,14 +73,18 @@ def itinerary_agent(state: TravelState):
 
     prompt = f"""
     Create a travel itinerary.
+    Starting city (traveller origin): {state.get("origin_city") or "not provided"}
     User Query:
-    {state['user_query']}
+    {state["user_query"]}
 
     Flight Results:
-    {state['flight_results']}
+    {state["flight_results"]}
 
     Hotel Results:
-    {state['hotel_results']}
+    {state["hotel_results"]}
+
+    Plan outbound travel FROM the starting city to the destination.
+    Do not assume a different origin.
     """
 
     response = llm.invoke([
@@ -99,15 +105,18 @@ def final_agent(state: TravelState):
 
     final_prompt = f"""
     Generate final travel response.
+    Starting city (traveller origin): {state.get("origin_city") or "not provided"}
 
     Flights:
-    {state['flight_results']}
+    {state["flight_results"]}
 
     Hotels:
-    {state['hotel_results']}
+    {state["hotel_results"]}
 
     Itinerary:
-    {state['itinerary']}
+    {state["itinerary"]}
+
+    Keep flights and the itinerary consistent with departing from the starting city.
     """
 
     response = llm.invoke([
@@ -176,6 +185,7 @@ if __name__ == "__main__":
                 HumanMessage(content=user_input)
             ],
             "user_query": user_input,
+            "origin_city": "",
             "flight_results": "",
             "hotel_results": "",
             "itinerary": "",

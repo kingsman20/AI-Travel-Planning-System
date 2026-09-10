@@ -18,7 +18,7 @@ load_dotenv()
 API_KEY = os.getenv("AVIATIONSTACK_API_KEY")
 
 
-def search_flights(query):
+def search_flights(query, origin=""):
 
     url = "http://api.aviationstack.com/v1/flights"
 
@@ -32,6 +32,8 @@ def search_flights(query):
     data = response.json()
 
     flights = []
+    if origin:
+        flights.append(f"Traveller origin: {origin}\nPrefer flights departing from this city.\n")
 
     if "data" in data:
 
